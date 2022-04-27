@@ -8,6 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -43,7 +44,8 @@ func main() {
 	log.Printf("result: %s", r.GetMessage())
 
 	d := pb.NewProductClient(conn)
-	rr, err := d.CreateProduct(ctx, &pb.ProductDataRequest{
+	createProductCtx := metadata.AppendToOutgoingContext(ctx, "domain", "example.com")
+	rr, err := d.CreateProduct(createProductCtx, &pb.ProductDataRequest{
 		Name:  "Makanan",
 		Price: 100,
 	})
