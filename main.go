@@ -47,12 +47,26 @@ func (p *productServer) CreateProduct(ctx context.Context, in *pb.ProductDataReq
 	}, nil
 }
 
+func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		var values []string
+		md, ok := metadata.FromIncomingContext(ctx)
+		if ok {
+			values = md.Get("domain")
+		}
+		if len(values) > 0 {
+			log.Println("Received metadata from interceptor ", values[0])
+		}
+		return handler(ctx, req)
+	}
+}
+
 func main() {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
 		log.Printf("failed to listen: %v", err)
 	}
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.UnaryInterceptor(UnaryServerInterceptor()))
 	pb.RegisterUserServer(s, &server{})
 	pb.RegisterProductServer(s, &productServer{})
 	log.Printf("server listening at %v", lis.Addr())
