@@ -41,4 +41,15 @@ func main() {
 	}
 
 	log.Printf("result: %s", r.GetMessage())
+
+	d := pb.NewProductClient(conn)
+	rr, err := d.CreateProduct(ctx, &pb.ProductDataRequest{
+		Name:  "Makanan",
+		Price: 100,
+	})
+	if err != nil {
+		log.Fatalf("could not create user : %v", err)
+	}
+	log.Printf("result: %s", rr.GetMessage())
+
 }

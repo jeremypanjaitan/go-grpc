@@ -25,3 +25,17 @@ message UserCreatedReply{
     string message = 1;
     UserDataRequest data = 2;
 }
+
+service Product {
+    rpc CreateProduct(ProductDataRequest) returns(ProductCreatedReply) {}
+}
+
+message ProductDataRequest{
+    string name = 1;
+    int32 price = 2;
+}
+
+message ProductCreatedReply{
+    string message = 1;
+    ProductDataRequest data = 2;
+}
