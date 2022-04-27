@@ -1,0 +1,27 @@
+
+//syntax version
+syntax = "proto3";
+
+//Where the generated code will be saved
+option go_package="gprc-go/grpcgo";
+
+package grpcgo;
+
+// The user greeting service definition
+service User {
+    // Create a user function
+    rpc CreateUser(UserDataRequest) returns(UserCreatedReply) {}
+}
+
+// the request message that contain three fields
+message UserDataRequest{
+    string name = 1;
+    string address = 2;
+    int32 age = 3;
+}
+
+// the resopnse message container message and the use created data
+message UserCreatedReply{
+    string message = 1;
+    UserDataRequest data = 2;
+}
