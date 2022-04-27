@@ -9,6 +9,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func init() {
@@ -33,6 +34,12 @@ type productServer struct {
 }
 
 func (p *productServer) CreateProduct(ctx context.Context, in *pb.ProductDataRequest) (*pb.ProductCreatedReply, error) {
+	var values []string
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		values = md.Get("domain")
+	}
+	log.Println("Received metadata ", values[0])
 	log.Printf("Received: %v\n", in.GetName())
 	return &pb.ProductCreatedReply{
 		Message: "product with name " + in.GetName() + " created",
