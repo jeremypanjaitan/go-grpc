@@ -7,6 +7,8 @@ import (
 	pb "gprc-go/grpcgo"
 	"log"
 	"net"
+	"sync"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -45,6 +47,41 @@ func (p *productServer) CreateProduct(ctx context.Context, in *pb.ProductDataReq
 		Message: "product with name " + in.GetName() + " created",
 		Data:    in,
 	}, nil
+}
+
+func (p *productServer) GetBulkProduct(in *pb.GetBulkProductQuery, src pb.Product_GetBulkProductServer) error {
+	var products []pb.ProductDataResponse
+
+	// Create five product
+	for i := 0; i < 5; i++ {
+		products = append(products, pb.ProductDataResponse{
+			Name:  fmt.Sprintf("Makanan %v", i+1),
+			Price: in.GetPrice(),
+		})
+	}
+
+	var wg sync.WaitGroup
+
+	//Create 5 goroutine to send each of the product
+	for i := 0; i < len(products); i++ {
+		wg.Add(1)
+		go func(count int, product *pb.ProductDataResponse) {
+			defer wg.Done()
+			time.Sleep(time.Duration(int64(1)) * time.Second)
+
+			if err := src.Send(&pb.ProductBulkDataResponse{
+				Message: fmt.Sprintf("data - %d", count),
+				Data:    nil,
+			}); err != nil {
+				log.Println("disini", err)
+			}
+			log.Printf("Finishing request number : %d", count+1)
+		}(i, &products[i])
+	}
+
+	//Wait until all goroutine finish executing
+	wg.Wait()
+	return nil
 }
 
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {

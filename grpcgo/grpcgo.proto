@@ -28,6 +28,10 @@ message UserCreatedReply{
 
 service Product {
     rpc CreateProduct(ProductDataRequest) returns(ProductCreatedReply) {}
+
+    //the server will return stream response
+    //means the client will send one request then receive multiple response
+    rpc GetBulkProduct(GetBulkProductQuery)returns(stream ProductBulkDataResponse){}
 }
 
 message ProductDataRequest{
@@ -38,4 +42,18 @@ message ProductDataRequest{
 message ProductCreatedReply{
     string message = 1;
     ProductDataRequest data = 2;
+}
+
+message GetBulkProductQuery{
+    int32 price = 1;
+}
+
+message ProductDataResponse{
+    string name = 1;
+    int32 price = 2;
+}
+
+message ProductBulkDataResponse{
+    string message = 1;
+    ProductDataResponse data = 2;
 }

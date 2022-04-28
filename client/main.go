@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	pb "gprc-go/grpcgo"
+	"io"
 	"log"
 	"time"
 
@@ -14,6 +15,10 @@ import (
 const (
 	addr = "localhost:50051"
 )
+
+func init() {
+	log.SetFlags(log.Lshortfile)
+}
 
 func main() {
 
@@ -53,5 +58,34 @@ func main() {
 		log.Fatalf("could not create user : %v", err)
 	}
 	log.Printf("result: %s", rr.GetMessage())
+
+	stream, err := d.GetBulkProduct(context.Background(), &pb.GetBulkProductQuery{
+		Price: 2000,
+	})
+	if err != nil {
+		log.Println(err)
+	}
+	done := make(chan bool)
+
+	//create go routine until that receive response sent by
+	//the server until there is no response anymore
+	go func() {
+		for {
+			resp, err := stream.Recv()
+			if err == io.EOF {
+				done <- true
+				return
+			}
+			if err != nil {
+				log.Fatalf("cannot receive %v", err)
+			}
+			log.Printf("Resp received: %s", resp.GetMessage())
+		}
+	}()
+
+	//wait until for the goroutine finish exeucting
+
+	<-done
+	log.Printf("finished")
 
 }
